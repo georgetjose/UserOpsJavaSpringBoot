@@ -3,12 +3,16 @@ package com.user.userops.controller;
 import com.user.userops.model.User;
 import com.user.userops.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api")
@@ -22,6 +26,8 @@ public class UserController {
         this.userService=userService;
     }*/
 
+    @Autowired
+    MessageSource messageSource;
 
     @GetMapping(path = "/users")
     public ResponseEntity<List<User>> getAllUsers()
@@ -33,8 +39,9 @@ public class UserController {
     // get a specific user
     @GetMapping("/users/{userId}")
     public ResponseEntity<User> getSpecificUser(@PathVariable int userId){
+        Locale locale = LocaleContextHolder.getLocale();
         User user = userService.getUser(userId);
-        if(user==null) throw new UserNotFoundException("user with id"+ userId+" not found");
+        if(user==null) throw new UserNotFoundException(messageSource.getMessage("error.userNotFound",null,"Default Error Message",locale));
         return ResponseEntity.ok().body(user);
     }
 
@@ -42,7 +49,7 @@ public class UserController {
     @GetMapping("/user")
     public ResponseEntity<User> getSpecificUserQuery(@RequestParam int userId){
         User user = userService.getUser(userId);
-        if(user==null) throw new UserNotFoundException("user with id"+ userId+" not found");
+        if(user==null) throw new UserNotFoundException("user with id "+ userId+" not found");
         return ResponseEntity.ok().body(user);
     }
 
@@ -65,7 +72,7 @@ public class UserController {
     {
         User deleteUser = userService.deleteUser(userId);
         if(deleteUser==null)
-            throw new UserNotFoundException("user with id"+ userId+" not found");
+            throw new UserNotFoundException("user with id "+ userId+" not found");
         return ResponseEntity.noContent().build();
     }
 
@@ -75,7 +82,7 @@ public class UserController {
     {
         User updateUser = userService.updateUser(userId, user);
         if(updateUser==null)
-            throw new UserNotFoundException("user with id"+ userId+" not found");
+            throw new UserNotFoundException("user with id "+ userId+" not found");
         return ResponseEntity.ok().body(updateUser);
     }
 
@@ -85,7 +92,8 @@ public class UserController {
     {
         User patchUser = userService.updateUserPartially(userId, user);
         if(patchUser==null)
-            throw new UserNotFoundException("user with id"+ userId+" not found");
-        return ResponseEntity.ok().body(patchUser);
+            throw new UserNotFoundException("user with id "+ userId+" not found");
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("").buildAndExpand(patchUser.getId()).toUri();
+        return ResponseEntity.status(HttpStatus.OK).location(uri).body(patchUser);
     }
 }
