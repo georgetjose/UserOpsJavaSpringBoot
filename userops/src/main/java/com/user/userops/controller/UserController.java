@@ -38,6 +38,14 @@ public class UserController {
         return ResponseEntity.ok().body(user);
     }
 
+    // get a specific user using query parameter
+    @GetMapping("/user")
+    public ResponseEntity<User> getSpecificUserQuery(@RequestParam int userId){
+        User user = userService.getUser(userId);
+        if(user==null) throw new UserNotFoundException("user with id"+ userId+" not found");
+        return ResponseEntity.ok().body(user);
+    }
+
     // create a new user
     @PostMapping(path= "/users", consumes ="application/json", produces="application/json")
     public ResponseEntity<User> createUser(@RequestBody User user)
@@ -58,7 +66,7 @@ public class UserController {
         User deleteUser = userService.deleteUser(userId);
         if(deleteUser==null)
             throw new UserNotFoundException("user with id"+ userId+" not found");
-        return ResponseEntity.ok().body("The user record with id: "+userId+" is deleted!!!");
+        return ResponseEntity.noContent().build();
     }
 
     // update a user
@@ -69,5 +77,15 @@ public class UserController {
         if(updateUser==null)
             throw new UserNotFoundException("user with id"+ userId+" not found");
         return ResponseEntity.ok().body(updateUser);
+    }
+
+    // update a user partially
+    @PatchMapping (path ="/usernameUpdate/{userId}", consumes ="application/json", produces="application/json")
+    public ResponseEntity<User> updateSpecificUserPartially(@PathVariable int userId, @RequestBody User user)
+    {
+        User patchUser = userService.updateUserPartially(userId, user);
+        if(patchUser==null)
+            throw new UserNotFoundException("user with id"+ userId+" not found");
+        return ResponseEntity.ok().body(patchUser);
     }
 }

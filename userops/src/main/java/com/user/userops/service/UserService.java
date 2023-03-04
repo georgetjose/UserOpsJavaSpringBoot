@@ -44,6 +44,7 @@ public class UserService {
 
         for (User user:users){
             if(user.getId()==userId) {
+                //users.removeIf(x->x.getId()==userId)
                 users.remove(user);
                 return user;
             }
@@ -59,13 +60,28 @@ public class UserService {
             if(user.getId()==userId)
             {
                 //users.remove(user);
-                User newUser = User.builder().id(userId).name(requestUser.getName()).dob(requestUser.getDob()).build();
-                users.set(counter,newUser);
-                return newUser;
+                User updatedUser = User.builder().id(userId).name(requestUser.getName()).dob(requestUser.getDob()).build();
+                users.set(userId,updatedUser);
+                return updatedUser;
             }
             counter++;
         }
         return null;
     }
 
+    public User updateUserPartially(int userId, User requestUser)
+    {
+        int counter = 0;
+        for (User user:users)
+        {
+            if(user.getId()==userId)
+            {
+                User patchedUser = User.builder().id(userId).name(requestUser.getName()).dob(user.getDob()).build();
+                users.set(counter,patchedUser);
+                return patchedUser;
+            }
+            counter++;
+        }
+        return null;
+    }
 }
